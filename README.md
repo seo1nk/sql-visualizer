@@ -4,20 +4,6 @@ SELECT 文専用の SQL パーサーを **Rust のパーサーコンビネータ
 クエリを「集合がどう形作られ、絞られ、選択されるか」の**データフロー図**として
 ブラウザ上に描くプロジェクト。パーサーは WASM としてブラウザ内で動く。
 
-## 特徴
-
-- **FROM-first 構文** — 標準の `SELECT ... FROM ...` に加えて、
-  `FROM users WHERE age >= 20 SELECT id, name` のように
-  論理的な評価順で書き始められる(句の順序は自由・意味は同じ AST に正規化)
-- **JOIN は「合流」として描く** — JOIN ノードは作らず、2つの集合が
-  1つの結合済みテーブルに合流する。結合キーはそれぞれの矢印上に表示
-- **列の系譜(lineage)** — SQL に現れた列だけを事実として表示し、
-  「最終結果に届く列」と「条件にのみ使われる列」を色で区別。
-  現れていない列の存在は `…` で示す
-- **論理実行順の可視化** — フローの並び(WITH → FROM → JOIN → WHERE →
-  GROUP BY → SELECT → …)がそのまま実行順。長文 SQL の読解や
-  「どの段階で絞るべきか」というチューニングの検討に使える
-
 ## 起動方法
 
 前提: Rust(rustup)、Node.js + pnpm、wasm-pack
@@ -132,22 +118,6 @@ pnpm dev                    # 開発サーバー
 pnpm build                  # 型チェック + プロダクションビルド
 node scripts/wasm-smoke.mjs # WASM 経由の動作確認
 ```
-
-## デプロイ(kseo.ink/works/sql-visualizer)
-
-静的アセットのみの Cloudflare Worker として、kseo.ink 本体(asobi)とは
-独立にデプロイする。パスが具体的なルートが優先されるため、本体の設定変更は不要。
-
-```sh
-cd frontend
-pnpm run deploy:works   # WASM ビルド → vite build --base ./ → .deploy にステージング → wrangler deploy
-```
-
-- 設定: [frontend/wrangler.works.jsonc](./frontend/wrangler.works.jsonc)
-  (ルート `kseo.ink/works/sql-visualizer*`)
-- 配信パスを変える場合は wrangler.works.jsonc の `routes.pattern` と
-  [frontend/scripts/stage-deploy.mjs](./frontend/scripts/stage-deploy.mjs) の
-  ディレクトリ名を合わせて変更する
 
 ## 謝辞
 
